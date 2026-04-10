@@ -7,15 +7,22 @@ use Illuminate\Database\Eloquent\Model;
 class Transaction extends Model
 {
     protected $fillable = [
-        'user_id', 'book_id', 'status', 'borrowed_at',
-        'due_date', 'returned_at', 'fine'
+        'siswa_id',
+        'buku_id',
+        'tanggal_pinjam',
+        'tanggal_jatuh_tempo',
+        'tanggal_dikembalikan',
+        'status',
     ];
 
-    public function user() {
-        return $this->belongsTo(User::class);
+    public function siswa()
+    {
+        return $this->belongsTo(User::class, 'siswa_id');
     }
 
-    public function book() {
-        return $this->belongsTo(Book::class);
+    public function buku()
+    {
+        return $this->belongsTo(Book::class, 'buku_id');
     }
 }
+

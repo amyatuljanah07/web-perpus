@@ -18,4 +18,7 @@ class Book extends Model
         'synopsis',
         'cover_url'
     ];
+
+  
+
 }

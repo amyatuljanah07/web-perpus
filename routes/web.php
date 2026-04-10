@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\BorrowRequestController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\SiswaBooksController;
+use App\Http\Controllers\SiswaBorrowingController;
 
 // Welcome/Landing page route
 Route::get('/', function () {
@@ -72,3 +73,11 @@ Route::prefix('siswa')->name('siswa.')->group(function () {
     Route::post('/siswa/books/{borrowing}/request-return', [SiswaAuthController::class, 'requestReturn'])->name('siswa.books.request-return');
 });
 Route::delete('/admin/members/{id}', [\App\Http\Controllers\Admin\MemberController::class, 'destroy'])->name('admin.members.destroy');
+// Riwayat peminjaman
+Route::get('/siswa/riwayat', [SiswaBorrowingController::class, 'riwayat'])->name('siswa.riwayat');
+
+// Proses pengembalian
+Route::put('/siswa/borrowing/{id}/return', [SiswaBorrowingController::class, 'returnBook'])->name('siswa.borrowing.return');
+
+Route::post('/siswa/kembalikan/{id}', [TransactionController::class, 'returnBook'])
+    ->name('siswa.kembalikan');

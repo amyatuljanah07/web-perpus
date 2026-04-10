@@ -35,7 +35,7 @@
                             @endif
                         </td>
                         <td>Rp {{ number_format($history->fine, 0, ',', '.') }}</td>
-                    </tr>
+                    </tr>   
                     @endforeach
                 </tbody>
             </table>

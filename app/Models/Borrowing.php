@@ -24,15 +24,10 @@ class Borrowing extends Model
     ];
 
     protected $casts = [
-        'borrow_date' => 'date',
-        'return_date' => 'date'
-    ];
-
-    protected $dates = [
-        'borrow_date',
-        'due_date',
-        'return_date'
-    ];
+    'borrow_date' => 'datetime',
+    'return_date' => 'datetime',
+    'due_date' => 'datetime',
+];
 
     public function siswa()
     {
@@ -49,15 +44,17 @@ class Borrowing extends Model
         return $this->hasOne(ReturnRequest::class);
     }
 
+    // Hitung denda (Rp 5000 per hari telat)
     public function calculateFine()
     {
-        if ($this->status === 'Dipinjam' && Carbon::now()->gt($this->due_date)) {
-            $daysLate = Carbon::now()->diffInDays($this->due_date);
-            return $daysLate * 5000; // Rp 5.000 per hari
+        if ($this->status === 'Dipinjam' && $this->due_date && Carbon::now()->gt($this->due_date)) {
+          $daysLate = Carbon::parse($this->due_date)->diffInDays(Carbon::now());
+            return $daysLate * 5000;
         }
         return 0;
     }
 
+    // Update saat buku dikembalikan
     public function returnBook()
     {
         $this->status = 'Dikembalikan';
@@ -65,12 +62,13 @@ class Borrowing extends Model
         $this->fine = $this->calculateFine();
         $this->save();
         
-        // Increment book stock
+        // Kembalikan stok buku
         $this->book->increment('stock');
         
         return true;
     }
 
+    // Status helper
     public function isPending()
     {
         return $this->status === 'Pending Return';
@@ -78,7 +76,7 @@ class Borrowing extends Model
 
     public function isOverdue()
     {
-        return $this->status === 'Dipinjam' && Carbon::now()->gt($this->due_date);
+        return $this->status === 'Dipinjam' && $this->due_date && Carbon::now()->gt($this->due_date);
     }
 
     public function isBorrowed()
@@ -86,21 +84,26 @@ class Borrowing extends Model
         return $this->status === 'Dipinjam';
     }
 
-    public function getStatusDisplay()
-    {
-        if ($this->isOverdue()) {
-            return 'Terlambat';
-        }
-        
-        switch ($this->status) {
-            case 'Dipinjam':
-                return 'Sedang Dipinjam';
-            case 'Pending Return':
-                return 'Menunggu Konfirmasi';
-            case 'Dikembalikan':
-                return 'Sudah Dikembalikan';
-            default:
-                return $this->status;
-        }
+    // Status untuk Blade
+    public function getStatusDisplayAttribute()
+{
+    if ($this->isOverdue()) {
+        return [
+            'text'  => 'Terlambat',
+            'class' => 'danger'
+        ];
     }
+
+    switch ($this->status) {
+        case 'Dipinjam':
+            return ['text' => 'Sedang Dipinjam', 'class' => 'primary'];
+        case 'Pending Return':
+            return ['text' => 'Menunggu Konfirmasi', 'class' => 'warning'];
+        case 'Dikembalikan':
+            return ['text' => 'Sudah Dikembalikan', 'class' => 'success'];
+        default:
+            return ['text' => $this->status, 'class' => 'secondary'];
+    }
+}
+
 }

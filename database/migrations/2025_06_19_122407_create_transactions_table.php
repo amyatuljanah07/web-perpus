@@ -14,14 +14,13 @@ return new class extends Migration
         
     Schema::create('transactions', function (Blueprint $table) {
     $table->id();
-    $table->foreignId('user_id')->constrained()->onDelete('cascade');
-    $table->foreignId('book_id')->constrained()->onDelete('cascade');
-    $table->enum('status', ['menunggu persetujuan', 'dipinjam', 'menunggu pengembalian', 'dikembalikan', 'ditolak']);
-    $table->date('borrowed_at')->nullable();   // Tanggal disetujui untuk dipinjam
-    $table->date('due_date')->nullable();      // Tanggal jatuh tempo pengembalian
-    $table->date('returned_at')->nullable();   // Tanggal dikembalikan
-    $table->integer('fine')->default(0);       // Denda jika telat
-    $table->timestamps();                      // created_at dan updated_at
+    $table->foreignId('siswa_id')->constrained('users');
+    $table->foreignId('buku_id')->constrained('books');
+    $table->date('tanggal_pinjam');
+    $table->date('tanggal_jatuh_tempo'); // dipilih siswa saat pinjam
+    $table->date('tanggal_dikembalikan')->nullable(); // otomatis saat siswa return
+    $table->enum('status', ['Sedang Dipinjam', 'Returned'])->default('Sedang Dipinjam');
+    $table->timestamps();
 });
 
     }

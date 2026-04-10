@@ -9,6 +9,9 @@ use App\Models\Siswa;
 use Illuminate\Support\Facades\DB;
 use App\Models\BorrowRequest;
 use App\Models\Member;
+use App\Models\Transaction;
+use Illuminate\Support\Facades\Auth;    
+
 
 class TransactionController extends Controller
 {
@@ -48,25 +51,23 @@ class TransactionController extends Controller
 
         return redirect()->back()->with('success', 'Buku berhasil dikembalikan');
     }
-    public function store(Request $request)
+    public function store(Request $request, $bukuId)
 {
     $request->validate([
-        'siswa_id' => 'required|exists:siswas,id',
-        'book_id' => 'required|exists:books,id',
-        'borrow_date' => 'required|date',
-        'return_date' => 'nullable|date|after_or_equal:borrow_date',
+        'tanggal_jatuh_tempo' => 'required|date|after_or_equal:today',
     ]);
 
-    Borrowing::create([
-        'siswa_id' => $request->siswa_id,
-        'book_id' => $request->book_id,
-        'borrow_date' => $request->borrow_date,
-        'return_date' => $request->return_date,
-        'status' => 'approved'
+    Transaction::create([
+          'siswa_id' => Auth::id(), // ✅
+        'buku_id' => $bukuId,
+        'tanggal_pinjam' => now(),
+        'tanggal_jatuh_tempo' => $request->tanggal_jatuh_tempo,
+        'status' => 'Sedang Dipinjam',
     ]);
 
-    return redirect()->route('admin.transactions.index')->with('success', 'Peminjaman berhasil ditambahkan.');
+    return redirect()->route('siswa.riwayat')->with('success', 'Buku berhasil dipinjam!');
 }
+
 
 public function approve($id)
 {
@@ -88,5 +89,26 @@ public function approve($id)
 
     return redirect()->back()->with('success', 'Peminjaman disetujui dan siswa masuk ke Members');
 }
+
+
+public function returnBook($id)
+{
+    $borrowing = Borrowing::where('id', $id)
+        ->where('siswa_id', Auth::id()) // ✅ lebih aman utk Intelephense
+        ->firstOrFail();
+
+    if ($borrowing->status === 'Sedang Dipinjam') {
+        $borrowing->update([
+            'status' => 'Returned',
+            'tanggal_dikembalikan' => now(),
+        ]);
+    }
+
+    return redirect()->route('siswa.riwayat')
+        ->with('success', 'Buku berhasil dikembalikan!');
+}
+
+
+
 
 }

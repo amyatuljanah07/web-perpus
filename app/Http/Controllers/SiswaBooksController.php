@@ -7,6 +7,7 @@ use App\Models\BorrowRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
+use Carbon\Carbon;
 
 class SiswaBooksController extends Controller
 {
@@ -22,7 +23,11 @@ class SiswaBooksController extends Controller
         if (!$siswaId) {
             return redirect('/siswa/login')->with('error', 'Silakan login dahulu');
         }
-
+        
+           $request->validate([
+        'borrow_date' => 'required|date',
+        'due_date'    => 'required|date|after_or_equal:borrow_date',
+    ]);
         try {
             $book = Book::findOrFail($id);
             

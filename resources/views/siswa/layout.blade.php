@@ -121,7 +121,8 @@
                     <h4 class="mb-0 fw-bold text-primary">@yield('page-title')</h4>
                     <div class="dropdown">
                         <button class="btn btn-light dropdown-toggle rounded-pill shadow-sm" type="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle me-1"></i> {{ $nama }}
+                            <i class="bi bi-person-circle me-1"></i> {{ Auth::guard('siswa')->user()->nama ?? 'Siswa' }}
+
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>

@@ -282,80 +282,94 @@
                     </div>
                 </div>
                 
-                <!-- Book Catalog Section -->
-                <div class="container-fluid p-0">
-                    <div class="card mb-4">
-                        <div class="card-header bg-white py-3">
-                            <div class="row align-items-center g-2">
-                                <div class="col">
-                                    <h5 class="mb-0 fw-bold text-primary">Katalog Buku</h5>
-                                </div>
-                                <div class="col-auto">
-                                    <form method="GET" class="d-flex align-items-center gap-2">
-                                        <select class="form-select form-select-sm" name="category" onchange="this.form.submit()">
-                                            <option value="">Semua Kategori</option>
-                                            @foreach($categories as $category)
-                                                <option value="{{ $category }}" {{ request('category') == $category ? 'selected' : '' }}>
-                                                    {{ $category }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                    </form>
-                                </div>
-                                <div class="col-4">
-                                    <form class="d-flex gap-2" method="GET">
-                                        <input type="text" 
-                                               name="search" 
-                                               class="form-control form-control-sm rounded-pill" 
-                                               placeholder="Cari judul, penulis..."
-                                               value="{{ request('search') }}">
-                                        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 shadow-sm">
-                                            <i class="bi bi-search"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </div>
+             <!-- Bagian Card Buku -->
+<div class="row g-4">
+    @foreach($books as $book)
+        <div class="col-sm-6 col-md-4 col-lg-3">
+            <!-- Card Buku -->
+            <div class="card h-100 book-card">
+                <img src="{{ $book->cover_url ? asset('storage/'.$book->cover_url) : 'https://via.placeholder.com/150x200' }}"
+                     class="card-img-top" style="height:250px;object-fit:cover;">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title h6 fw-bold text-primary">{{ $book->title }}</h5>
+                    <p class="text-muted small">{{ $book->author }}</p>
+                    <div class="d-flex justify-content-between mt-auto">
+                        <span class="badge bg-light text-dark border border-primary">{{ $book->category }}</span>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-secondary rounded-pill" 
+                                    data-bs-toggle="modal" data-bs-target="#bookModal{{ $book->id }}">
+                                Detail
+                            </button>
+                            @if($book->status == 'Tersedia' && $book->stock > 0)
+                                <button class="btn btn-sm btn-primary rounded-pill" 
+                                        data-bs-toggle="modal" data-bs-target="#pinjamModal{{ $book->id }}">
+                                    Pinjam
+                                </button>
+                            @else
+                                <button class="btn btn-sm btn-primary rounded-pill" disabled>Pinjam</button>
+                            @endif
                         </div>
-                        <div class="card-body">
-                            <div class="row g-4">
-                                @foreach($books as $book)
-                                <div class="col-sm-6 col-md-4 col-lg-3">
-                                    <div class="card h-100 book-card">
-                                        <div class="position-relative">
-                                            <img src="{{ $book->cover_url ? asset('storage/'.$book->cover_url) : 'https://via.placeholder.com/150x200' }}" 
-                                                 class="card-img-top" alt="Cover {{ $book->title }}"
-                                                 style="height: 250px; object-fit: cover;">
-                                            <div class="position-absolute top-0 end-0 m-2">
-                                                <span class="badge bg-{{ $book->status == 'Tersedia' ? 'success' : 'warning' }}">
-                                                    {{ $book->status }}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div class="card-body d-flex flex-column">
-                                            <h5 class="card-title h6 fw-bold text-primary">{{ $book->title }}</h5>
-                                            <p class="text-muted small mb-2">{{ $book->author }}</p>
-                                            <div class="d-flex justify-content-between align-items-center mt-auto">
-                                                <span class="badge bg-light text-dark border border-primary">{{ $book->category }}</span>
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill" 
-                                                            data-bs-toggle="modal" data-bs-target="#bookModal{{ $book->id }}">
-                                                        Detail
-                                                    </button>
-                                                    @if($book->status == 'Tersedia' && $book->stock > 0)
-                                                        <form action="{{ route('siswa.books.borrow', $book->id) }}" method="POST">
-                                                            @csrf
-                                                            <button type="submit" class="btn btn-sm btn-primary rounded-pill">
-                                                                Pinjam
-                                                            </button>
-                                                        </form>
-                                                    @else
-                                                        <button class="btn btn-sm btn-primary rounded-pill" disabled>
-                                                            Pinjam
-                                                        </button>
-                                                    @endif
-                                                </div>
-                                            </div>
-                                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endforeach
+</div> <!-- selesai row g-4 -->
+
+<!-- Bagian Modal (loop kedua khusus modal) -->
+@foreach($books as $book)
+    <!-- Detail Modal -->
+    <div class="modal fade" id="bookModal{{ $book->id }}" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">{{ $book->title }}</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Penulis:</strong> {{ $book->author }}</p>
+                    <p><strong>Kategori:</strong> {{ $book->category }}</p>
+                    <p><strong>Stok:</strong> {{ $book->stock }}</p>
+                    <p class="text-muted" style="white-space: pre-line;">{{ $book->synopsis }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pinjam Modal -->
+    <div class="modal fade" id="pinjamModal{{ $book->id }}" tabindex="-1">
+        <div class="modal-dialog">
+            <form action="{{ route('siswa.books.borrow', $book->id) }}" method="POST" class="borrow-form modal-content">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Form Peminjaman Buku</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>Judul:</strong> {{ $book->title }}</p>
+                    <div class="mb-3">
+  <label for="tanggal_pinjam{{ $book->id }}" class="form-label">Tanggal Peminjaman</label>
+  <input type="date" class="form-control" id="tanggal_pinjam{{ $book->id }}" 
+         name="borrow_date" required>
+</div>
+
+<div class="mb-3">
+  <label for="tanggal_selesai{{ $book->id }}" class="form-label">Tanggal Selesai</label>
+  <input type="date" class="form-control" id="tanggal_selesai{{ $book->id }}" 
+         name="due_date" required>
+</div>
+
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-success">Simpan</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+
                                     </div>
                                 </div>
 
